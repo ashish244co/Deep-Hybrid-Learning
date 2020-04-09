@@ -31,7 +31,10 @@ timeForLogin2=[]
 timeForLobby2=[]
 error2=[]
 startTime2=[]
+timeposter1=[]
+timeposter2=[]
 t2=[]
+
 for _ in range(100):
     try:
 
@@ -41,6 +44,7 @@ for _ in range(100):
         start=strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())
         startLogin = time.time()
         startTime1.append(start)
+        driver.set_page_load_timeout(300)
         driver.get('https://onlinexperiences.com/scripts/Server.nxp?LASCmd=L:0&AI=1&ShowKey=83097&LoginType=0&InitialDisplay=1&ClientBrowser=0&DisplayItem=NULL&LangLocaleID=0&SSO=1&RFR=https://onlinexperiences.com/Launch/Event.htm?ShowKey=83097')
 
         timeForLogin1.append(time.time()-startLogin)
@@ -55,24 +59,35 @@ for _ in range(100):
             timeForLobby1.append(0)
             error1.append('Login Page Error')
         else:
-            string='Merck Digital Congress Center'
-            if(str(page).find(string)!=-1):
+            if(str(page).find('Merck Digital Congress Center')!=-1):
                 timeForLobby1.append(time.time()-stopLogin)
                 error1.append('No')
+                time.sleep(10)
+                try:
+                    timeposter1=time.time()
+                    driver.get('https://onlinexperiences.com/scripts/Server.nxp?LASCmd=AI:1;F:SF!40000&BoothKey=315053')
+                    timeposter1.append(time.time()-timeposter1)
+                except:
+                    timeposter1.append(0)
+                    error1.append('Error')
             else:
+                timeposter1.append(0)
                 timeForLobby1.append(0)
                 error1.append('Lobby Error')
 
 
     except:
-        print('error')
+        timeForLogin1.append(0)
+        timeForLobby1.append(0)
+        timeposter1.append(0)
+        error1.append('Login Page Error')
 
 
     time.sleep(10)
     driver.close()
 
-    zippedList =  list(zip(startTime1, timeForLogin1,timeForLobby1,error1))
-    dfObj = pd.DataFrame(zippedList, columns = ['Start Time' , 'Time Taken(Login Page)(s)','Time Taken(Lobby Page)(s)','Error'])
+    zippedList =  list(zip(startTime1, timeForLogin1,timeForLobby1,timeposter1,error1))
+    dfObj = pd.DataFrame(zippedList, columns = ['Start Time' , 'Time Taken(Login Page)(s)','Time Taken(Lobby Page)(s)','Time Taken(Poster Page)(s)','Error'])
     dfObj.to_excel('testCongressWebForm.xlsx')
 
     time.sleep(1800)
@@ -81,6 +96,7 @@ for _ in range(100):
         page=''
 
         driver=webdriver.Chrome(chromeDriver)
+        driver.set_page_load_timeout(300)
 
         start=strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())
         startLogin = time.time()
@@ -99,18 +115,31 @@ for _ in range(100):
             now=time.time()
             timeForLobby2.append(now-stoptLogin)
             error2.append('No')
+            time.sleep(10)
+            try:
+                timeposter2=time.time()
+                driver.get('https://onlinexperiences.com/scripts/Server.nxp?LASCmd=AI:1;F:SF!40000&BoothKey=315053')
+                timeposter2.append(time.time()-timeposter2)
+            except:
+                timeposter2.append(0)
+                error2.append('Error')
         else:
+            timeposter2.append(0)
             timeForLobby2.append(0)
             error2.append('Lobby Error')
 
     except:
-        print('error')
+        timeForLogin2.append(0)
+        timeForLobby2.append(0)
+        timeposter2.append(0)
+        error2.append('Error')
+
 
     time.sleep(10)
     driver.close()
 
-    zippedList =  list(zip(startTime2,timeForLogin2,timeForLobby2,error2))
-    dfObj = pd.DataFrame(zippedList, columns = ['Start Timestamp' ,'Time Taken(Login Page)(s)','Time Taken(Lobby Page)(s)','Error'])
+    zippedList =  list(zip(startTime2,timeForLogin2,timeForLobby2,timeposter2,error2))
+    dfObj = pd.DataFrame(zippedList, columns = ['Start Timestamp' ,'Time Taken(Login Page)(s)','Time Taken(Lobby Page)(s)','Time Taken(Poster Page)(s)','Error'])
     dfObj.to_excel('testCongressAPI.xlsx')
 
     time.sleep(1800)
