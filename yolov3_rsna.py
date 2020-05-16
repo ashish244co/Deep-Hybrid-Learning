@@ -177,13 +177,9 @@ backup = {}
 
 !wget -q https://pjreddie.com/media/files/darknet53.conv.74
 
-!wget --no-check-certificate -q "https://docs.google.com/uc?export=download&id=18ptTK4Vbeokqpux8Onr0OmwUP9ipmcYO" -O cfg/rsna_yolov3.cfg_train
-
 !chmod 644 darknet
 
 ! ./darknet detector train cfg/rsna.data cfg/rsna_yolov3.cfg_train darknet53.conv.74 -i 0 | tee train_log.txt
-
-!wget --no-check-certificate -q "https://docs.google.com/uc?export=download&id=1OhnlV3s7r6xsEme6DKkNYjcYjsl-C_Av" -O train_log.txt
 
 iters = []
 losses = []
@@ -197,17 +193,10 @@ with open("train_log.txt", 'r') as f:
 
 plt.figure(figsize=(20, 5))
 plt.subplot(1,2,1)
-sns.lineplot(iters, total_losses, label="totla loss")
-sns.lineplot(iters, losses, label="avg loss")
+sns.lineplot(iters, total_losses, label="Total IOU")
+sns.lineplot(iters, losses, label="Average IOU")
 plt.xlabel("Iteration")
 plt.ylabel("Loss")
-
-plt.subplot(1,2,2)
-sns.lineplot(iters, total_losses, label="totla loss")
-sns.lineplot(iters, losses, label="avg loss")
-plt.xlabel("Iteration")
-plt.ylabel("Loss")
-plt.ylim([0, 4.05])
 
 ex_patient_id = annots[annots.Target == 1].patientId.values[2]
 shutil.copy(ex_img_path, "test.jpg")
