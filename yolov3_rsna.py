@@ -27,7 +27,6 @@ np.random.seed(random_stat)
 
 !git clone https://github.com/pjreddie/darknet.git
 
-# Build gpu version darknet
 !cd 'darknet' && sed '1 s/^.*$/GPU=1/; 2 s/^.*$/CUDNN=1/' -i Makefile
 
 DATA_DIR = "../input"
@@ -39,9 +38,7 @@ img_dir = os.path.join(os.getcwd(), "images")  # .jpg
 label_dir = os.path.join(os.getcwd(), "labels")  # .txt
 metadata_dir = os.path.join(os.getcwd(), "metadata") # .txt
 
-# YOLOv3 config file directory
 cfg_dir = os.path.join(os.getcwd(), "cfg")
-# YOLOv3 training checkpoints will be saved here
 backup_dir = os.path.join(os.getcwd(), "backup")
 
 for directory in [img_dir, label_dir, metadata_dir, cfg_dir, backup_dir]:
@@ -66,7 +63,6 @@ def save_img_from_dcm(dcm_dir, img_dir, patient_id):
     cv2.imwrite(img_fp, img_3ch)
     
 def save_label_from_dcm(label_dir, patient_id, row=None):
-    # rsna defualt image size
     img_size = 1024
     label_fp = os.path.join(label_dir, "{}.txt".format(patient_id))
     
@@ -80,7 +76,6 @@ def save_label_from_dcm(label_dir, patient_id, row=None):
     w = row[3]
     h = row[4]
     
-    # 'r' means relative. 'c' means center.
     rx = top_left_x/img_size
     ry = top_left_y/img_size
     rw = w/img_size
@@ -103,7 +98,7 @@ def save_yolov3_data_from_rsna(dcm_dir, img_dir, label_dir, annots):
             continue
 
         target = row[5]
-        # Since kaggle kernel have samll volume (5GB ?), I didn't contain files with no bbox here.
+        
         if target == 0:
             continue
         save_label_from_dcm(label_dir, patient_id, row)
@@ -137,15 +132,12 @@ def write_train_list(metadata_dir, img_dir, name, series):
             line = "{}\n".format(os.path.join(img_dir, "{}.jpg".format(patient_id)))
             f.write(line)
 
-# Following lines do not contain data with no bbox
 patient_id_series = annots[annots.Target == 1].patientId.drop_duplicates()
 
 tr_series, val_series = train_test_split(patient_id_series, test_size=0.1, random_state=random_stat)
 print("The # of train set: {}, The # of validation set: {}".format(tr_series.shape[0], val_series.shape[0]))
 
-# train image path list
 write_train_list(metadata_dir, img_dir, "tr_list.txt", tr_series)
-# validation image path list
 write_train_list(metadata_dir, img_dir, "val_list.txt", val_series)
 
 def save_yolov3_test_data(test_dcm_dir, img_dir, metadata_dir, name, series):
@@ -181,7 +173,6 @@ backup = {}
 
 !cat cfg/rsna.data
 
-# Label list of bounding box.
 !echo "pneumonia" > cfg/rsna.names
 
 !wget -q https://pjreddie.com/media/files/darknet53.conv.74
@@ -230,5 +221,4 @@ print(ex_patient_id)
 
 !cd darknet && ./darknet detector test ../cfg/rsna.data ../cfg/rsna_yolov3.cfg_test ../backup/rsna_yolov3_15300.weights ../test.jpg -thresh 0.005
 
-# ![](predictions.jpg)
 plt.imshow(cv2.imread("./darknet/predictions.jpg"))
